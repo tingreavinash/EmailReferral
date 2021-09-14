@@ -49,20 +49,13 @@ public class FileServiceImpl implements FileService {
 
         FileWriter csvWriter = new FileWriter(contactsPath);
         try {
-            csvWriter.append("First Name");
-            csvWriter.append(",");
-            csvWriter.append("Last Name");
-            csvWriter.append(",");
-            csvWriter.append("Email");
-            csvWriter.append(",");
-            csvWriter.append("Company");
-            csvWriter.append(",");
-            csvWriter.append("Job Role");
-            csvWriter.append(",");
-            csvWriter.append("Job URL");
-            csvWriter.append(",");
-            csvWriter.append("Mail Sent?");
-            csvWriter.append("\n");
+            csvWriter.append("First Name").append(",")
+            .append("Last Name").append(",")
+            .append("Email").append(",")
+            .append("Company").append(",")
+            .append("Job Role").append(",")
+            .append("Job URL").append(",")
+            .append("Mail Sent?").append("\n");
 
             for (Contact contact : contacts) {
                 csvWriter.append(contact.getFirstName()).append(",")
