@@ -18,9 +18,9 @@ import java.util.List;
 public class FileServiceImpl implements FileService {
     private static final Logger LOG = LoggerFactory.getLogger(FileServiceImpl.class);
 
-    private static final String CONTACT_NAME = "[Contact Name]";
-    private static final String COMPANY_NAME = "[Company Name]";
-    private static final String JOB_ROLE = "[Job Role]";
+    private static final String R_CONTACT_NAME = "[Contact Name]";
+    private static final String R_COMPANY_NAME = "[Company Name]";
+    private static final String R_JOB_ROLE = "[Job Role]";
     @Autowired
     ConfigProperties myConfig;
 
@@ -45,9 +45,9 @@ public class FileServiceImpl implements FileService {
     public String customizeMailContent(Contact contact) {
         String content = readEmailTemplate();
 
-        return content.replace(CONTACT_NAME, contact.getFirstName())
-                .replace(COMPANY_NAME, contact.getCompany())
-                .replace(JOB_ROLE, contact.getJobRole() + " " + contact.getJobUrl());
+        return content.replace(R_CONTACT_NAME, contact.getFirstName())
+                .replace(R_COMPANY_NAME, contact.getCompany())
+                .replace(R_JOB_ROLE, contact.getJobRole() + " " + contact.getJobUrl());
     }
 
     @Override
