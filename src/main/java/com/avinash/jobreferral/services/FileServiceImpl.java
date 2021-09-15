@@ -21,6 +21,7 @@ public class FileServiceImpl implements FileService {
     private static final String R_CONTACT_NAME = "[Contact Name]";
     private static final String R_COMPANY_NAME = "[Company Name]";
     private static final String R_JOB_ROLE = "[Job Role]";
+
     @Autowired
     ConfigProperties myConfig;
 
