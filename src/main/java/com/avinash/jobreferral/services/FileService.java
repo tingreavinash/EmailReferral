@@ -8,7 +8,10 @@ import java.util.List;
 
 public interface FileService {
     String readEmailTemplate();
-    String formatEmailTemplate(Contact contact) throws FileNotFoundException;
+
+    String customizeMailContent(Contact contact) throws FileNotFoundException;
+
     List<Contact> readContactsFromFile() throws FileNotFoundException;
+
     void writeToCSV(List<Contact> contacts) throws IOException;
 }

@@ -1,33 +1,40 @@
 package com.avinash.jobreferral.services;
 
 import com.avinash.jobreferral.bean.Contact;
-import org.springframework.beans.factory.annotation.Value;
+import com.avinash.jobreferral.configuration.ConfigProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class FileServiceImpl implements FileService {
-    @Value("${app.contactspath}")
-    String contactsPath;
+    private static final Logger LOG = LoggerFactory.getLogger(FileServiceImpl.class);
 
-    @Value("${app.emailtemplate}")
-    String emailTemplate;
-
-    List<Contact> records = new ArrayList<>();
+    private static final String R_CONTACT_NAME = "[Contact Name]";
+    private static final String R_COMPANY_NAME = "[Company Name]";
+    private static final String R_JOB_ROLE = "[Job Role]";
+    @Autowired
+    ConfigProperties myConfig;
 
     @Override
     public String readEmailTemplate() {
         StringBuilder sb = new StringBuilder();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(emailTemplate))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(myConfig.getTemplateLocation()))) {
             String line;
             while ((line = br.readLine()) != null) {
-                sb.append(line).append(System.lineSeparator());
+                sb.append(line).append("<br>");
             }
         } catch (IOException e) {
+            LOG.error(e.getMessage());
             e.printStackTrace();
         }
 
@@ -35,27 +42,25 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String formatEmailTemplate(Contact contact) {
+    public String customizeMailContent(Contact contact) {
         String content = readEmailTemplate();
 
-        String body = content.replace("[Contact Name]", contact.getFirstName())
-                .replace("[Company Name]", contact.getCompany())
-                .replace("[Job Role]", contact.getJobRole() + " " + contact.getJobUrl());
-        return body;
+        return content.replace(R_CONTACT_NAME, contact.getFirstName())
+                .replace(R_COMPANY_NAME, contact.getCompany())
+                .replace(R_JOB_ROLE, contact.getJobRole() + " " + contact.getJobUrl());
     }
 
     @Override
-    public void writeToCSV(List<Contact> contacts) throws IOException {
+    public void writeToCSV(List<Contact> contacts) {
 
-        FileWriter csvWriter = new FileWriter(contactsPath);
-        try {
+        try(FileWriter csvWriter = new FileWriter(myConfig.getContactLocation())) {
             csvWriter.append("First Name").append(",")
-            .append("Last Name").append(",")
-            .append("Email").append(",")
-            .append("Company").append(",")
-            .append("Job Role").append(",")
-            .append("Job URL").append(",")
-            .append("Mail Sent?").append("\n");
+                    .append("Last Name").append(",")
+                    .append("Email").append(",")
+                    .append("Company").append(",")
+                    .append("Job Role").append(",")
+                    .append("Job URL").append(",")
+                    .append("Mail Sent?").append("\n");
 
             for (Contact contact : contacts) {
                 csvWriter.append(contact.getFirstName()).append(",")
@@ -67,16 +72,18 @@ public class FileServiceImpl implements FileService {
                         .append(contact.getAlreadySent()).append("\n");
 
             }
-        } finally {
-            csvWriter.flush();
-            csvWriter.close();
+        } catch (IOException ex){
+            LOG.error(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
     @Override
     public List<Contact> readContactsFromFile() {
+        List<Contact> records = new ArrayList<>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(myConfig.getContactLocation()));
 
-        try (BufferedReader br = new BufferedReader(new FileReader(contactsPath))) {
             String line;
             int count = 0;
             while ((line = br.readLine()) != null) {
@@ -99,6 +106,7 @@ public class FileServiceImpl implements FileService {
                 records.add(contact);
             }
         } catch (IOException e) {
+            LOG.error(e.getMessage());
             e.printStackTrace();
         }
         return records;
