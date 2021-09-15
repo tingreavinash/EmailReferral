@@ -12,6 +12,8 @@ public interface MailService {
     void sendMail(Mail mail) throws MessagingException, UnsupportedEncodingException;
 
     void prepareAndSendMail() throws IOException;
+
     List<Contact> getSuccessfulDeliveries();
+
     List<Contact> getFailedDeliveries();
 }

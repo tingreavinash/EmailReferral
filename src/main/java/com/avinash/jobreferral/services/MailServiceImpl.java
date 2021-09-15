@@ -22,21 +22,16 @@ import java.util.*;
 @Service("mailService")
 public class MailServiceImpl implements MailService {
     private static final Logger LOG = LoggerFactory.getLogger(MailServiceImpl.class);
-
-    @Autowired
-    JavaMailSender mailSender;
-
-    @Autowired
-    FileService fileService;
-
-    @Autowired
-    ConfigProperties myConfig;
-
     private static final String MAIL_SENT = "YES";
     private static final String MAIL_NOT_SENT = "NO";
-
     private static final List<Contact> successfulDeliveries = new ArrayList<>();
     private static final List<Contact> failedDeliveries = new ArrayList<>();
+    @Autowired
+    JavaMailSender mailSender;
+    @Autowired
+    FileService fileService;
+    @Autowired
+    ConfigProperties myConfig;
 
     public List<Contact> getSuccessfulDeliveries() {
         return successfulDeliveries;
@@ -102,6 +97,6 @@ public class MailServiceImpl implements MailService {
         FileSystemResource resource = new FileSystemResource(new File(myConfig.getAttachment()));
         mimeMessageHelper.addAttachment(Objects.requireNonNull(resource.getFilename()), resource);
 
-        //mailSender.send(mimeMessageHelper.getMimeMessage());
+        mailSender.send(mimeMessageHelper.getMimeMessage());
     }
 }

@@ -1,31 +1,33 @@
 package com.avinash.jobreferral.services;
 
 import com.avinash.jobreferral.bean.Contact;
-import org.springframework.beans.factory.annotation.Value;
+import com.avinash.jobreferral.configuration.ConfigProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class FileServiceImpl implements FileService {
-    @Value("${app.contactspath}")
-    String contactsPath;
-
-    @Value("${app.emailtemplate}")
-    String emailTemplate;
-
-    List<Contact> records = new ArrayList<>();
+    private static final String CONTACT_NAME = "[Contact Name]";
+    private static final String COMPANY_NAME = "[Company Name]";
+    private static final String JOB_ROLE = "[Job Role]";
+    @Autowired
+    ConfigProperties myConfig;
 
     @Override
     public String readEmailTemplate() {
         StringBuilder sb = new StringBuilder();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(emailTemplate))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(myConfig.getTemplateLocation()))) {
             String line;
             while ((line = br.readLine()) != null) {
-                sb.append(line).append(System.lineSeparator());
+                sb.append(line).append("<br>");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -35,27 +37,26 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String formatEmailTemplate(Contact contact) {
+    public String customizeMailContent(Contact contact) {
         String content = readEmailTemplate();
 
-        String body = content.replace("[Contact Name]", contact.getFirstName())
-                .replace("[Company Name]", contact.getCompany())
-                .replace("[Job Role]", contact.getJobRole() + " " + contact.getJobUrl());
-        return body;
+        return content.replace(CONTACT_NAME, contact.getFirstName())
+                .replace(COMPANY_NAME, contact.getCompany())
+                .replace(JOB_ROLE, contact.getJobRole() + " " + contact.getJobUrl());
     }
 
     @Override
     public void writeToCSV(List<Contact> contacts) throws IOException {
 
-        FileWriter csvWriter = new FileWriter(contactsPath);
+        FileWriter csvWriter = new FileWriter(myConfig.getContactLocation());
         try {
             csvWriter.append("First Name").append(",")
-            .append("Last Name").append(",")
-            .append("Email").append(",")
-            .append("Company").append(",")
-            .append("Job Role").append(",")
-            .append("Job URL").append(",")
-            .append("Mail Sent?").append("\n");
+                    .append("Last Name").append(",")
+                    .append("Email").append(",")
+                    .append("Company").append(",")
+                    .append("Job Role").append(",")
+                    .append("Job URL").append(",")
+                    .append("Mail Sent?").append("\n");
 
             for (Contact contact : contacts) {
                 csvWriter.append(contact.getFirstName()).append(",")
@@ -75,8 +76,9 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public List<Contact> readContactsFromFile() {
+        List<Contact> records = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(contactsPath))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(myConfig.getContactLocation()))) {
             String line;
             int count = 0;
             while ((line = br.readLine()) != null) {
